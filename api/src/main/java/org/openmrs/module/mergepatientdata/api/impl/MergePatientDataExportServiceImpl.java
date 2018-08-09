@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.openmrs.api.context.Context;
 import org.openmrs.module.mergepatientdata.MergePatientDataConstants;
@@ -47,6 +48,7 @@ public class MergePatientDataExportServiceImpl implements MergePatientDataExport
 				PatientResourceService patientResourceService = new PatientResourceServiceImpl();
 				// We currently not merging voided Patients
 				Set<org.openmrs.Patient> openmrsPatients = new HashSet<>(patientResourceService.getAllPatients(false));
+		
 				try {
 					resourceMapCounter = resourceMapCounter == null ? new HashMap<>() : resourceMapCounter;
 					List<Patient> patients = (List<Patient>) ObjectUtils
@@ -65,15 +67,16 @@ public class MergePatientDataExportServiceImpl implements MergePatientDataExport
 				// Check whether we have Patients
 				if (store.getPatients() != null) {
 					store.setEncounters(new ArrayList<>());
-					List<Patient> patientsWhoseEncountersAreRequired = store.getPatients();
 					List<Encounter> encounterCandidates = new ArrayList<>();
-					for (Patient pat : patientsWhoseEncountersAreRequired) {
+					for (Patient pat : store.getPatients()) {
 						List<org.openmrs.Encounter> encounters = Context.getEncounterService().
 								getEncountersByPatientIdentifier(pat.getPatientIdentifier().getIdentifier());
 						try {
 							if (encounters != null) {
+								System.out.println("Processing " + pat.getName() + "'s Encounters -size: " + encounters.size());
 								List<Encounter> mpdEncounters = (List<Encounter>) ObjectUtils.
 										getMPDResourceObjectsFromOpenmrsResourceObjects(new HashSet<>(encounters));
+								System.out.println("Done converting the Encounters");
 								for (Encounter enc : mpdEncounters) {
 									encounterCandidates.add(enc);
 								}

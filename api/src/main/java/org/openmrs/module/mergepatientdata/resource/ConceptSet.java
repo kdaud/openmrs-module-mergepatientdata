@@ -14,14 +14,12 @@ public class ConceptSet implements MergeAbleResource {
 	
 	private Double sortWeight;
 	
-	private User creator;
-	
 	private Date dateCreated;
 	
 	public ConceptSet(org.openmrs.ConceptSet set) {
 		this.conceptSetId = set.getConceptSetId();
-		this.concept = new Concept(set.getConcept(), false);
-		this.conceptSet = new Concept(set.getConceptSet(), false);
+		//this.concept = new Concept(set.getConcept(), false);
+		//this.conceptSet = new Concept(set.getConceptSet(), false);
 		this.sortWeight = set.getSortWeight();
 		this.dateCreated = set.getDateCreated();
 		// Set super User as creator
@@ -68,14 +66,6 @@ public class ConceptSet implements MergeAbleResource {
 	
 	public void setSortWeight(Double sortWeight) {
 		this.sortWeight = sortWeight;
-	}
-	
-	public User getCreator() {
-		return creator;
-	}
-	
-	public void setCreator(User creator) {
-		this.creator = creator;
 	}
 	
 	public Date getDateCreated() {

@@ -5,6 +5,7 @@ import java.util.Date;
 import org.openmrs.BaseOpenmrsObject;
 import org.openmrs.Drug;
 
+@Deprecated
 public class ConceptAnswer implements MergeAbleResource {
 	
 	private Integer conceptAnswerId;
@@ -16,8 +17,6 @@ public class ConceptAnswer implements MergeAbleResource {
 	// For now we are depending on Openmrs Type, hope it won't cause issues
 	private Drug answerDrug;
 	
-	private User creator;
-	
 	private Date dateCreated;
 	
 	private Double sortWeight;
@@ -26,13 +25,12 @@ public class ConceptAnswer implements MergeAbleResource {
 	
 	public ConceptAnswer(org.openmrs.ConceptAnswer openmrsAns) {
 		this.conceptAnswerId = openmrsAns.getConceptAnswerId();
-		this.concept = new Concept(openmrsAns.getConcept(), false);
-		this.answerConcept = new Concept(openmrsAns.getAnswerConcept(), false);
+		//this.concept = new Concept(openmrsAns.getConcept().getId(), openmrsAns.getConcept().getUuid());
+		//this.answerConcept = new Concept(openmrsAns.getAnswerConcept(), false);
 		this.sortWeight = openmrsAns.getSortWeight();
 		this.answerDrug = openmrsAns.getAnswerDrug();
 		this.dateCreated = openmrsAns.getDateCreated();
 		this.dateChanged = openmrsAns.getDateChanged();
-		
 	}
 	
 	@Override
@@ -86,14 +84,6 @@ public class ConceptAnswer implements MergeAbleResource {
 	
 	public void setAnswerDrug(Drug answerDrug) {
 		this.answerDrug = answerDrug;
-	}
-	
-	public User getCreator() {
-		return creator;
-	}
-	
-	public void setCreator(User creator) {
-		this.creator = creator;
 	}
 	
 	public Date getDateCreated() {

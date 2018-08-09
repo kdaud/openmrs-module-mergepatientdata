@@ -4,6 +4,7 @@ import java.util.Date;
 
 import org.openmrs.BaseOpenmrsObject;
 
+@Deprecated
 public class ConceptMap implements MergeAbleResource {
 	
 	private Integer conceptMapId;
@@ -15,10 +16,6 @@ public class ConceptMap implements MergeAbleResource {
 	
 	private ConceptMapType conceptMapType;
 	
-	private User creator;
-	
-	private User changedBy;
-	
 	private Date dateCreated;
 	
 	private Date dateChanged;
@@ -27,7 +24,7 @@ public class ConceptMap implements MergeAbleResource {
 	
 	public ConceptMap(org.openmrs.ConceptMap map) {
 		this.conceptMapId = map.getConceptMapId();
-		this.concept = new Concept(map.getConcept(), false);
+		//this.concept = new Concept(map.getConcept(), false);
 		this.conceptMapType = new ConceptMapType(map.getConceptMapType());
 		this.uuid = map.getUuid();
 		this.dateCreated = map.getDateCreated();
@@ -64,22 +61,6 @@ public class ConceptMap implements MergeAbleResource {
 	
 	public void setConceptMapType(ConceptMapType conceptMapType) {
 		this.conceptMapType = conceptMapType;
-	}
-	
-	public User getCreator() {
-		return creator;
-	}
-	
-	public void setCreator(User creator) {
-		this.creator = creator;
-	}
-	
-	public User getChangedBy() {
-		return changedBy;
-	}
-	
-	public void setChangedBy(User changedBy) {
-		this.changedBy = changedBy;
 	}
 	
 	public Date getDateCreated() {

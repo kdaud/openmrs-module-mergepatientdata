@@ -73,12 +73,20 @@ public class Location implements MergeAbleResource {
 	
 	private Boolean retired;
 	
+	public Location(Integer id, String uuid) {
+		this.id = id;
+		this.uuid = uuid;
+	}
+	
 	/**
 	 * @param openmrsLocation
 	 * @param primaryMetaData If false @Field parentLocation & childLocations will set to null.It
 	 *            prevents {@link java.lang.StackOverflowError} Exception.
 	 */
 	public Location(org.openmrs.Location openmrsLocation, Boolean initializeMoreMetaData) {
+		if (openmrsLocation == null) {
+			return;
+		}
 		this.id = openmrsLocation.getId();
 		this.uuid = openmrsLocation.getUuid();
 		this.description = openmrsLocation.getDescription();

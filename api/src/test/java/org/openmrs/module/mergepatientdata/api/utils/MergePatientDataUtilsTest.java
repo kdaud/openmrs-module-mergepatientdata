@@ -246,7 +246,7 @@ public class MergePatientDataUtilsTest extends BaseModuleContextSensitiveTest {
 	
 	private Obs buildObs() {
 		Obs newObs = new Obs();
-		newObs.setConcept(new Concept(Context.getConceptService().getConcept(5497), true));
+		newObs.setConcept(new Concept(5497, Context.getConceptService().getConcept(5497).getUuid()));
 		newObs.setValueNumeric(50d);
 		Location loc2 = new Location();
 		loc2.setId(2);

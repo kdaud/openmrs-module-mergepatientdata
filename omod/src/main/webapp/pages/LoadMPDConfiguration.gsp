@@ -34,7 +34,7 @@
 
 <form class="simple-form-ui" method="POST" action="LoadMPDConfiguration.page">
     <span id="errorMsg" class="field-error" style="display: none">
-        ${ui.message("sync2.configuration.errors.invalidJson")}
+        ${ui.message("mergepatientdata.configuration.errors.serverError")}
     </span>
     <span id="server-error-msg" class="field-error" style="display: none">
         ${ui.message("mergepatientdata.configuration.errors.serverError")}

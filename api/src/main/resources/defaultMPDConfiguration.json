@@ -14,11 +14,6 @@
        },
        {
          "enabled" : true,
-         "classTitle": "Location",
-         "openmrsClass" : "org.openmrs.Location"
-       },
-       {
-         "enabled" : true,
          "classTitle": "Encounter",
          "openmrsClass" : "org.openmrs.Encounter"
        }
@@ -31,11 +26,6 @@
          "enabled" : true,
          "classTitle": "Patient",
          "openmrsClass" : "org.openmrs.Patient"
-       },
-       {
-         "enabled" : true,
-         "classTitle": "Location",
-         "openmrsClass" : "org.openmrs.Location"
        },
        {
          "enabled" : true,

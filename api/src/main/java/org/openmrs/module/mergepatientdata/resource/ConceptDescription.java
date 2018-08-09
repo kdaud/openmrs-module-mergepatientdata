@@ -5,6 +5,7 @@ import java.util.Locale;
 
 import org.openmrs.BaseOpenmrsObject;
 
+@Deprecated
 public class ConceptDescription implements MergeAbleResource {
 	
 	private Integer conceptDescriptionId;
@@ -15,17 +16,13 @@ public class ConceptDescription implements MergeAbleResource {
 	
 	private Locale locale;
 	
-	private User creator;
-	
 	private Date dateCreated;
-	
-	private User changedBy;
 	
 	private Date dateChanged;
 	
 	public ConceptDescription(org.openmrs.ConceptDescription desc) {
 		this.conceptDescriptionId = desc.getConceptDescriptionId();
-		this.concept = new Concept(desc.getConcept(), false);
+		//this.concept = new Concept(desc.getConcept(), false);
 		this.description = desc.getDescription();
 		this.locale = desc.getLocale();
 		this.dateCreated = desc.getDateCreated();
@@ -76,38 +73,6 @@ public class ConceptDescription implements MergeAbleResource {
 	
 	public void setLocale(Locale locale) {
 		this.locale = locale;
-	}
-	
-	public User getCreator() {
-		return creator;
-	}
-	
-	public void setCreator(User creator) {
-		this.creator = creator;
-	}
-	
-	public Date getDateCreated() {
-		return dateCreated;
-	}
-	
-	public void setDateCreated(Date dateCreated) {
-		this.dateCreated = dateCreated;
-	}
-	
-	public User getChangedBy() {
-		return changedBy;
-	}
-	
-	public void setChangedBy(User changedBy) {
-		this.changedBy = changedBy;
-	}
-	
-	public Date getDateChanged() {
-		return dateChanged;
-	}
-	
-	public void setDateChanged(Date dateChanged) {
-		this.dateChanged = dateChanged;
 	}
 	
 }

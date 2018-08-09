@@ -8,7 +8,6 @@ import java.util.TreeSet;
 
 import org.openmrs.BaseOpenmrsMetadata;
 import org.openmrs.BaseOpenmrsObject;
-import org.openmrs.Concept;
 import org.openmrs.module.mergepatientdata.api.utils.ObjectUtils;
 
 public class Person extends BaseOpenmrsMetadata implements MergeAbleResource {
@@ -35,7 +34,7 @@ public class Person extends BaseOpenmrsMetadata implements MergeAbleResource {
 	
 	private Boolean dead;
 	
-	private Concept causeOfDeath; // Take care of this field. It could cause Hibernate proxy issues
+	private Concept causeOfDeath;
 	
 	private Date deathDate;
 	
@@ -47,6 +46,11 @@ public class Person extends BaseOpenmrsMetadata implements MergeAbleResource {
 	
 	public Person() {
 		
+	}
+	
+	public Person(Integer id, String uuid) {
+		this.personId = id;
+		this.setUuid(uuid);
 	}
 	
 	@SuppressWarnings("unchecked")
@@ -69,7 +73,8 @@ public class Person extends BaseOpenmrsMetadata implements MergeAbleResource {
 		this.age = openmrsPerson.getAge();
 		this.gender = openmrsPerson.getGender();
 		this.dead = openmrsPerson.getDead();
-		this.causeOfDeath = openmrsPerson.getCauseOfDeath();
+		this.causeOfDeath = openmrsPerson.getCauseOfDeath() != null ? new Concept(openmrsPerson.getCauseOfDeath()
+		        .getConceptId(), openmrsPerson.getCauseOfDeath().getUuid()) : null;
 		this.deathDate = openmrsPerson.getDeathDate();
 		this.voided = openmrsPerson.getVoided();
 		this.deathdateEstimated = openmrsPerson.getDeathdateEstimated();
@@ -85,7 +90,9 @@ public class Person extends BaseOpenmrsMetadata implements MergeAbleResource {
 		openmrsPerson.setDateCreated(getDateCreated());
 		Set<org.openmrs.PersonName> names = new TreeSet<>();
 		org.openmrs.PersonName openmrsPeferredName = this.preferredName != null ? (org.openmrs.PersonName) preferredName.getOpenMrsObject() : null;
-		names.add(openmrsPeferredName);
+		if (openmrsPeferredName != null) {
+			names.add(openmrsPeferredName);
+		}
 		if (this.names != null) {
 			for (PersonName mpdPersonName : this.names) {
 				org.openmrs.PersonName openmrsPersonName = (org.openmrs.PersonName) mpdPersonName.getOpenMrsObject();
@@ -101,11 +108,13 @@ public class Person extends BaseOpenmrsMetadata implements MergeAbleResource {
 			}
 			openmrsPerson.setAddresses(addresses);
 		}
+		if (causeOfDeath != null) {
+			openmrsPerson.setCauseOfDeath((org.openmrs.Concept) causeOfDeath.getOpenMrsObject());
+		}
 		openmrsPerson.setBirthdate(birthdate);
 		openmrsPerson.setBirthdateEstimated(birthdateEstimated);
 		openmrsPerson.setGender(gender);
 		openmrsPerson.setDead(dead);
-		openmrsPerson.setCauseOfDeath(causeOfDeath);
 		openmrsPerson.setDeathDate(deathDate);
 		openmrsPerson.setVoided(voided);
 		openmrsPerson.setBirthdate(birthdate);

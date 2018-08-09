@@ -31,7 +31,7 @@ public class Field extends BaseOpenmrsMetadata implements MergeAbleResource {
 		this.setDescription(field.getDescription());
 		this.setName(field.getName());
 		this.fieldId = field.getFieldId();
-		this.concept = new Concept(field.getConcept(), true);
+		//this.concept = new Concept(field.getConcept(), true);
 		this.tableName = field.getTableName();
 		this.attributeName = field.getAttributeName();
 		this.defaultValue = field.getDefaultValue();

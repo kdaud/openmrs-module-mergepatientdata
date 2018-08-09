@@ -18,9 +18,9 @@ public class Obs implements MergeAbleResource {
 	
 	protected String accessionNumber;
 	
-	protected Obs obsGroup;
+	protected Obs obsGroup; // Parent of the Group if this is child
 	
-	protected Set<Obs> groupMembers;
+	protected Set<Obs> groupMembers; // Members if this is parent
 	
 	protected Concept valueCoded;
 	
@@ -61,22 +61,22 @@ public class Obs implements MergeAbleResource {
 		
 	}
 	
-	public Obs(Integer id) {
+	public Obs(Integer id, String uuid) {
 		this.obsId = id;
 	}
 	
 	public Obs(org.openmrs.Obs obs, Boolean setComplexMetadata) {
 		this.uuid = obs.getUuid();
-		this.person = new Person (obs.getPerson());
+		this.person = new Person (obs.getPerson().getId(), obs.getPerson().getUuid());
 		if (person != null) {
 			this.personId = person.getPersonId();
 		}
 		this.obsId = obs.getId();
-		this.concept = new Concept(obs.getConcept(), true);
+		this.concept = new Concept(obs.getConcept().getId(), obs.getConcept().getUuid());
 		this.obsDatetime = obs.getObsDatetime();
 		this.accessionNumber = obs.getAccessionNumber();
-		this.valueCoded = obs.getValueCoded() != null ? new Concept(obs.getValueCoded(), true) : null;
-		this.valueCodedName = obs.getValueCodedName() != null ? new ConceptName(obs.getValueCodedName()) : null;
+		this.valueCoded = obs.getValueCoded() != null ? new Concept(obs.getValueCoded().getConceptId(), obs.getValueCoded().getUuid()) : null;
+		this.valueCodedName = obs.getValueCodedName() != null ? new ConceptName(obs.getValueCodedName().getId(), obs.getValueCodedName().getUuid()) : null;
 		this.valueGroupId = obs.getValueGroupId();
 		this.valueDatetime = obs.getValueDatetime();
 		this.valueNumeric = obs.getValueNumeric();
@@ -84,33 +84,20 @@ public class Obs implements MergeAbleResource {
 		this.valueText = obs.getValueText();
 		this.valueComplex = obs.getValueComplex();
 		this.comment = obs.getComment();
-		this.location = obs.getLocation() != null ? new Location(obs.getLocation(), true) : null;
+		this.location = obs.getLocation() != null ? new Location(obs.getLocation().getId(), obs.getLocation().getUuid()) : null;
 		this.dirty = obs.isDirty();
 		this.hasGroupMembers = obs.hasGroupMembers();	
-		if (setComplexMetadata) {
-			this.obsGroup = obs.getObsGroup() != null ? new Obs(obs.getObsGroup(), false) : null;
-			this.previousVersion = obs.getPreviousVersion() != null ? new Obs(obs.getPreviousVersion(), false) : null;
-			if (obs.getGroupMembers() != null) {
-				Set<Obs> mpdObsGroupMembers = new HashSet<>();
-				for (org.openmrs.Obs member : obs.getGroupMembers()) {
-					Obs mpdMember = new Obs(member, false);
-					mpdObsGroupMembers.add(mpdMember);
-				}
-				this.groupMembers = mpdObsGroupMembers;
+		this.encounter = new Encounter(obs.getEncounter().getId(), obs.getEncounter().getUuid());
+		this.obsGroup = obs.getObsGroup() != null ? new Obs(obs.getObsGroup().getId(), obs.getObsGroup().getUuid()) : null;
+		this.previousVersion = obs.getPreviousVersion() != null ? new Obs(obs.getPreviousVersion().getId(), obs.getPreviousVersion().getUuid()) : null;
+		if (obs.getGroupMembers() != null) {
+			Set<Obs> mpdObsGroupMembers = new HashSet<>();
+			for (org.openmrs.Obs member : obs.getGroupMembers()) {
+				Obs mpdMember = new Obs(member.getId(), member.getUuid());
+				mpdObsGroupMembers.add(mpdMember);
 			}
-		} else {
-			// Just set the ids
-			this.previousVersion = obs.getPreviousVersion() != null ? new Obs(obs.getPreviousVersion().getId()) : null;
-			this.obsGroup = obs.getObsGroup() != null ? new Obs(obs.getObsGroup().getId()) : null;
-			if (obs.getGroupMembers() != null) {
-				Set<Obs> mpdObsGroupMembers = new HashSet<>();
-				for (org.openmrs.Obs member : obs.getGroupMembers()) {
-					Obs mpdMember = new Obs(member.getId());
-					mpdObsGroupMembers.add(mpdMember);
-				}
-				this.groupMembers = mpdObsGroupMembers;
-			}
-		}	
+			this.groupMembers = mpdObsGroupMembers;
+		} 	
 	}
 	
 	@Override

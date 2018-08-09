@@ -7,6 +7,7 @@ import java.util.TreeSet;
 
 import org.openmrs.BaseOpenmrsMetadata;
 import org.openmrs.BaseOpenmrsObject;
+import org.openmrs.Concept;
 import org.openmrs.PatientIdentifier;
 import org.openmrs.PersonAddress;
 import org.openmrs.PersonName;
@@ -27,6 +28,11 @@ public class Patient extends BaseOpenmrsMetadata implements MergeAbleResource {
 	private List<Identifier> identifiers = new ArrayList<Identifier>();
 	
 	public Patient() {
+	}
+	
+	public Patient(Integer id, String uuid) {
+		this.id = id;
+		this.setUuid(uuid);
 	}
 	
 	@SuppressWarnings("unchecked")
@@ -75,9 +81,11 @@ public class Patient extends BaseOpenmrsMetadata implements MergeAbleResource {
             patient.setBirthdate(person.getBirthdate());
             patient.setDead(person.getDead());
             patient.setDeathDate(person.getDeathDate());
-            patient.setCauseOfDeath(person.getCauseOfDeath());
             Set<PersonName> personNameSet = new TreeSet<>();
             PersonName preferredName = null;
+            if (person.getCauseOfDeath() != null) {
+            	patient.setCauseOfDeath((Concept) person.getCauseOfDeath().getOpenMrsObject());
+            }
             if (person.getPreferredName() != null) {
                 preferredName = (PersonName) person.getPreferredName().getOpenMrsObject();
             }

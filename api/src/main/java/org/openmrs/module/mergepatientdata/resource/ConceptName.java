@@ -21,13 +21,9 @@ public class ConceptName implements MergeAbleResource {
 	
 	private Locale locale;
 	
-	private User creator;
-	
 	private Date dateCreated;
 	
 	private Boolean voided = false;
-	
-	private User voidedBy;
 	
 	private Date dateVoided;
 	
@@ -42,9 +38,12 @@ public class ConceptName implements MergeAbleResource {
 	
 	private Boolean localePreferred = false;
 	
-	private User changedBy;
-	
 	private Date dateChanged;
+	
+	public ConceptName(Integer id, String uuid) {
+		this.conceptNameId = id;
+		this.uuid = uuid;
+	}
 	
 	@SuppressWarnings("unchecked")
 	public ConceptName(org.openmrs.ConceptName conceptName) {
@@ -59,7 +58,7 @@ public class ConceptName implements MergeAbleResource {
 			        .getMPDResourceObjectsFromOpenmrsResourceObjects((Set<? extends OpenmrsObject>) conceptName.getTags());
 		}
 		this.conceptNameType = conceptName.getConceptNameType();
-		this.concept = new Concept(conceptName.getConcept(), false);
+		this.concept = new Concept(conceptName.getConcept().getId(), conceptName.getConcept().getUuid());
 		this.uuid = conceptName.getUuid();
 	}
 	
@@ -80,7 +79,9 @@ public class ConceptName implements MergeAbleResource {
 		}
 		openmrsConceptName.setTags(tags);
 		openmrsConceptName.setConceptNameType(conceptNameType);
-		openmrsConceptName.setConcept((org.openmrs.Concept) concept.getOpenMrsObject());
+		if (concept != null) {
+			openmrsConceptName.setConcept((org.openmrs.Concept) concept.getOpenMrsObject());
+		}
 		openmrsConceptName.setUuid(uuid);
 		return openmrsConceptName;
 	}
@@ -117,14 +118,6 @@ public class ConceptName implements MergeAbleResource {
 		this.locale = locale;
 	}
 	
-	public User getCreator() {
-		return creator;
-	}
-	
-	public void setCreator(User creator) {
-		this.creator = creator;
-	}
-	
 	public Date getDateCreated() {
 		return dateCreated;
 	}
@@ -139,14 +132,6 @@ public class ConceptName implements MergeAbleResource {
 	
 	public void setVoided(Boolean voided) {
 		this.voided = voided;
-	}
-	
-	public User getVoidedBy() {
-		return voidedBy;
-	}
-	
-	public void setVoidedBy(User voidedBy) {
-		this.voidedBy = voidedBy;
 	}
 	
 	public Date getDateVoided() {
@@ -187,14 +172,6 @@ public class ConceptName implements MergeAbleResource {
 	
 	public void setLocalePreferred(Boolean localePreferred) {
 		this.localePreferred = localePreferred;
-	}
-	
-	public User getChangedBy() {
-		return changedBy;
-	}
-	
-	public void setChangedBy(User changedBy) {
-		this.changedBy = changedBy;
 	}
 	
 	public Date getDateChanged() {

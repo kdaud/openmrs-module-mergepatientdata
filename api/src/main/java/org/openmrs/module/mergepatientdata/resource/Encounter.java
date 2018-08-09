@@ -25,17 +25,24 @@ public class Encounter extends BaseOpenmrsMetadata implements MergeAbleResource 
 	
 	private Set<Obs> obs;
 	
+	private User encCreator;
+	
 	public Encounter() {
 		
+	}
+	
+	public Encounter(Integer id, String uuid) {
+		this.setEncounterId(id);
+		this.setUuid(uuid);
 	}
 	
 	public Encounter(org.openmrs.Encounter encounter, Boolean initializeComplexMetaData) {
 		this.setEncounterId(encounter.getEncounterId());
 		this.setUuid(encounter.getUuid());
 		this.encounterDatetime = encounter.getEncounterDatetime();
-		this.patient = new Patient(encounter.getPatient());
-		this.location = new Location(encounter.getLocation(), true);
-		this.form = new Form(encounter.getForm(), true);
+		this.patient = new Patient(encounter.getPatient().getId(), encounter.getPatient().getUuid());
+		this.location = new Location(encounter.getLocation().getId(), encounter.getLocation().getUuid());
+		this.form = new Form(encounter.getForm().getId(), encounter.getForm().getUuid());
 		this.encounterType = new EncounterType(encounter.getEncounterType());
 		if (initializeComplexMetaData) {
 			if (encounter.getObs() != null) {
@@ -46,6 +53,7 @@ public class Encounter extends BaseOpenmrsMetadata implements MergeAbleResource 
 				this.setObs(observations);
 			}
 		}
+		this.encCreator = new User(encounter.getCreator().getId(), encounter.getCreator().getUuid());
 	}
 	
 	@Override
@@ -83,6 +91,9 @@ public class Encounter extends BaseOpenmrsMetadata implements MergeAbleResource 
 				observations.add(observation);
 			}
 			encounter.setObs(observations);
+		}
+		if (this.encCreator != null) {
+			encounter.setCreator((org.openmrs.User) this.encCreator.getOpenMrsObject());
 		}
 		return encounter;
 	}

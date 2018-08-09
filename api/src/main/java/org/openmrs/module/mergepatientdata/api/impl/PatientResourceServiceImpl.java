@@ -130,7 +130,9 @@ public class PatientResourceServiceImpl extends BaseOpenmrsService implements Pa
 	private Patient inspectPatientPropertiesAndModifyThemAccordingly(Patient patient) {
 		patient.setId(null);
 		patient.setPersonId(null);
-		
+		if (patient.getCauseOfDeath() != null) {
+			patient.setCauseOfDeath(Context.getConceptService().getConceptByUuid(patient.getCauseOfDeath().getUuid()));
+		}
 		if (patient.getPersonName() != null) {
 			patient.getPersonName().setId(null);
 		}

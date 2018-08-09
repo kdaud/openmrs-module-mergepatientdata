@@ -80,8 +80,8 @@ public class ObjectUtils {
 				case MergePatientDataConstants.CONCEPTSET_RESOURCE_NAME:
 					return convertToMpdConceptSet(openmrsResourceObjects);
 					
-				case MergePatientDataConstants.CONCEPTATTR_RESOURCE_NAME:
-					return convertToMpdConceptAttr(openmrsResourceObjects);
+					//case MergePatientDataConstants.CONCEPTATTR_RESOURCE_NAME:
+					//return convertToMpdConceptAttr(openmrsResourceObjects);
 					
 				case MergePatientDataConstants.CONCEPTMAP_RESOURCE_NAME:
 					return convertToMpdConceptMap(openmrsResourceObjects);
@@ -278,6 +278,7 @@ public class ObjectUtils {
 		return result;
 	}
 	
+	/*
 	private static Collection<? extends MergeAbleResource> convertToMpdConceptAttr(
 			List<? extends OpenmrsObject> openmrsResourceObjects) {
 		List<ConceptAttribute> result = new ArrayList<>();
@@ -288,7 +289,7 @@ public class ObjectUtils {
 		}
 		return result;
 	}
-	
+	*/
 	private static Collection<? extends MergeAbleResource> convertToMpdConceptMap(
 			List<? extends OpenmrsObject> openmrsResourceObjects) {
 		Set<ConceptMap> result = new HashSet<>();
@@ -384,5 +385,7 @@ public class ObjectUtils {
 			}
 		}
 		encounterStoreList.addAll(filteredEncounterList);
+		sourceOfItems = null;
+		filteredEncounterList = null;
 	}
 }

@@ -7,12 +7,13 @@ import org.openmrs.Concept;
 import org.openmrs.ConceptName;
 import org.openmrs.EncounterType;
 import org.openmrs.Form;
-import org.openmrs.FormField;
 import org.openmrs.Location;
 import org.openmrs.Obs;
 import org.openmrs.Person;
+import org.openmrs.User;
 import org.openmrs.api.context.Context;
 import org.openmrs.module.mergepatientdata.api.EncounterResourceService;
+import org.openmrs.module.mergepatientdata.api.exceptions.MissingMetadataException;
 import org.openmrs.module.mergepatientdata.api.model.audit.PaginatedAuditMessage;
 import org.openmrs.module.mergepatientdata.api.utils.ObjectUtils;
 import org.openmrs.module.mergepatientdata.resource.Encounter;
@@ -48,15 +49,13 @@ public class EncounterResourceServiceImpl implements EncounterResourceService {
 	@SuppressWarnings("unchecked")
 	@Override
 	public void saveEncounters(List<Encounter> list, PaginatedAuditMessage auditor) {
+		
 		if (list != null && list.isEmpty()) {
 			return;
 		}
-		
 		List<org.openmrs.Encounter> encounters = (List<org.openmrs.Encounter>) ObjectUtils
 		        .getOpenmrsResourceObjectsFromMPDResourceObjects(list);
-		
 		int counter = 0;
-		
 		for (org.openmrs.Encounter encounter : encounters) {
 			// We are currently not supporting visits
 			encounter.setVisit(null);
@@ -64,7 +63,7 @@ public class EncounterResourceServiceImpl implements EncounterResourceService {
 			if (encounter.getId() != null) {
 				org.openmrs.Encounter enc = Context.getEncounterService().getEncounterByUuid(encounter.getUuid());
 				if (enc != null) {
-			
+					
 					if (encounter.getPatient().getId() == enc.getPatient().getId()) {
 						// Clear the Session to make the update possible
 						Context.clearSession();
@@ -83,7 +82,7 @@ public class EncounterResourceServiceImpl implements EncounterResourceService {
 						encounter.setUuid(null);
 						//Context.getEncounterService().purgeEncounter(enc);
 						inspectEncounterPropertiesAndModifyIfRequired(encounter);
-				
+						
 					}
 				} else {
 					encounter.setId(null);
@@ -100,61 +99,44 @@ public class EncounterResourceServiceImpl implements EncounterResourceService {
 	
 	private org.openmrs.Encounter inspectEncounterPropertiesAndModifyIfRequired(org.openmrs.Encounter enc) {
 		log.debug("Started inspecting properties of " + enc);
+		// Update Creator
+		if (enc.getCreator() != null) {
+			User creator = Context.getUserService().getUserByUuid(enc.getCreator().getUuid());
+			if (creator != null) {
+				enc.setCreator(creator);
+			} else {
+				// This User isn't known
+				throw new MissingMetadataException("Missing User of uuid#" + enc.getCreator().getUuid()
+				        + " Make sure its present before Merging");
+			}
+		}
 		// Update Location Resource
 		Location location = enc.getLocation();
-		Integer oldLocationId;
-		Integer newLocationId;
 		if (location != null) {
-			oldLocationId = location.getId();
 			if (location.getUuid() != null) {
 				Location existingLocation = Context.getLocationService().getLocationByUuid(location.getUuid());
+				System.out.println("Return Location of uuid " + location.getUuid() + " is " + existingLocation);
 				// Check if its already existing
 				if (existingLocation != null) {
-					if (existingLocation.getLocationId().equals(location.getLocationId())
-					        && existingLocation.getUuid().equals(location.getUuid())) {
-						// Its most likely to be already existing
-						// For now lets just set the value to original value
-						// TODO Implement something better
-						enc.setLocation(existingLocation);
-					} else {
-						location.setId(null);
-						location = Context.getLocationService().saveLocation(location);
-						enc.setLocation(location);
-					}
+					enc.setLocation(existingLocation);
 				} else {
-					location.setId(null);
-					location = Context.getLocationService().saveLocation(location);
-					enc.setLocation(location);
+					// Location is not known by this server
+					throw new MissingMetadataException("Missing Location of uuid#" + location.getUuid()
+					        + " Make sure its present before Merging");
 				}
 			}
 		}
 		
-		// Update Form
+		// The Form should already be existing
 		Form form = enc.getForm();
 		if (form != null) {
 			if (form.getUuid() != null) {
 				Form existingForm = Context.getFormService().getFormByUuid(form.getUuid());
-				// Check if Form really exists
 				if (existingForm != null) {
-					if (existingForm.getName().equals(form.getName())) {
-						enc.setForm(existingForm);
-					} else {
-						form.setId(null);
-						for (FormField field : form.getFormFields()) {
-							field.setId(null);
-						}
-						// Save a fresh Form
-						form = Context.getFormService().saveForm(form);
-						enc.setForm(form);
-					}
+					enc.setForm(existingForm);
 				} else {
-					form.setId(null);
-					for (FormField field : form.getFormFields()) {
-						field.setId(null);
-					}
-					// Save a fresh Form
-					form = Context.getFormService().saveForm(form);
-					enc.setForm(form);
+					throw new MissingMetadataException("Missing Form of uuid#" + form.getUuid()
+					        + " Make sure its present before Merging");
 				}
 			}
 		}
@@ -164,19 +146,11 @@ public class EncounterResourceServiceImpl implements EncounterResourceService {
 		if (type != null) {
 			if (type.getUuid() != null) {
 				EncounterType existingType = Context.getEncounterService().getEncounterTypeByUuid(type.getUuid());
-				// Check if it really exists
 				if (existingType != null) {
-					if (existingType.getUuid().equals(type.getUuid())) {
-						enc.setEncounterType(existingType);
-					} else {
-						type.setId(null);
-						type = Context.getEncounterService().saveEncounterType(type);
-						enc.setEncounterType(type);
-					}
+					enc.setEncounterType(existingType);
 				} else {
-					type.setId(null);
-					type = Context.getEncounterService().saveEncounterType(type);
-					enc.setEncounterType(type);
+					throw new MissingMetadataException("Missing EncounterType of uuid#" + type.getUuid()
+					        + " Make sure its present before Merging");
 				}
 			}
 		}
@@ -186,25 +160,14 @@ public class EncounterResourceServiceImpl implements EncounterResourceService {
 		enc.setObs(null);
 		enc = Context.getEncounterService().saveEncounter(enc);
 		for (Obs obs : observations) {
-			
 			obs.setPerson(enc.getPatient());
-			
 			obs.setEncounter(new org.openmrs.Encounter(enc.getId()));
-			// Checkout whether this obs is already existing
 			if (obs.getId() != null) {
 				Obs existingObs = Context.getObsService().getObsByUuid(obs.getUuid());
 				if (existingObs != null) {
-					// Prove that its really existing
-					// TODO this is quite to compare using uuids again
-					if (existingObs.getUuid().equals(obs.getUuid())) {
-						//obs = existingObs;
-						obs.setUuid(null);
-						inspectObsPropertiesAndModifyIfRequired(obs, enc);
-						//obs.setPerson(enc.getPatient());
-						
-					} else {
-						inspectObsPropertiesAndModifyIfRequired(obs, enc);
-					}
+					obs.setUuid(null);
+					inspectObsPropertiesAndModifyIfRequired(obs, enc);
+					//obs.setPerson(enc.getPatient());		
 				} else {
 					inspectObsPropertiesAndModifyIfRequired(obs, enc);
 				}
@@ -223,41 +186,49 @@ public class EncounterResourceServiceImpl implements EncounterResourceService {
 		obs.setId(null);
 		// Since an Encounter is for one specific Patient, lets assume also the Obs is for one Patient
 		obs.setPerson(new Person(enc.getPatient().getId()));
-		inspectConceptPropertiesAndModifyIfRequired(obs.getConcept(), obs);
-		inspectConceptPropertiesAndModifyIfRequired(obs.getValueCoded(), obs);
+		inspectConceptPropertiesAndModifyIfRequired(obs);
 		ConceptName name = obs.getValueCodedName();
 		if (name != null) {
-			ConceptName existingName = Context.getConceptService().getConceptName(name.getId());
+			ConceptName existingName = Context.getConceptService().getConceptNameByUuid(name.getUuid());
 			if (existingName != null) {
-				if (existingName.getUuid().equals(name.getUuid())) {
-					obs.setValueCodedName(existingName);
-				} else {
-					name.setId(null);
-				}
+				obs.setValueCodedName(existingName);
 			} else {
-				name.setId(null);
+				// Means this concept name isn't known to this server
+				// TODO Implement something better
+				throw new MissingMetadataException("Missing ConceptName of uuid#" + name.getUuid()
+				        + " Make sure its present before Merging");
 			}
 		}
 		return obs;
 	}
 	
-	private Concept inspectConceptPropertiesAndModifyIfRequired(Concept concept, Obs obs) {
-		log.debug("Inspecting Concept " + concept);
-		if (concept != null) {
-			// Prove that the concept exists
-			Concept existingConcept = Context.getConceptService().getConcept(concept.getId());
+	private void inspectConceptPropertiesAndModifyIfRequired(Obs obs) {
+		log.debug("Inspecting Concepts of " + obs);
+		if (obs.getConcept() != null) {
+			Concept existingConcept = Context.getConceptService().getConceptByUuid(obs.getConcept().getUuid());
+			System.out.println("Returned Concept with " + obs.getConcept().getUuid() + " is " + existingConcept);
 			if (existingConcept != null) {
-				if (existingConcept.getUuid().equals(concept.getUuid())) {
-					obs.setConcept(existingConcept);
-				} else {
-					concept.setId(null);
-					concept = Context.getConceptService().saveConcept(concept);
-				}
+				obs.setConcept(existingConcept);
+				
 			} else {
-				concept.setId(null);
-				concept = Context.getConceptService().saveConcept(concept);
+				// Means this concept isn't known to this server
+				// TODO Implement something better
+				throw new MissingMetadataException("Missing Concept of uuid#" + obs.getConcept().getUuid()
+				        + " Make sure its present before Merging");
 			}
 		}
-		return concept;
+		
+		if (obs.getValueCoded() != null) {
+			Concept existingConcept = Context.getConceptService().getConceptByUuid(obs.getValueCoded().getUuid());
+			if (existingConcept != null) {
+				obs.setValueCoded(existingConcept);
+				
+			} else {
+				// Means this concept isn't known to this server
+				// TODO Implement something better
+				throw new MissingMetadataException("Missing Concept of uuid#" + obs.getValueCoded().getUuid()
+				        + " Make sure its present before Merging");
+			}
+		}
 	}
 }

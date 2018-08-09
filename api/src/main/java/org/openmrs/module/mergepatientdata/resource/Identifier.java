@@ -31,7 +31,8 @@ public class Identifier implements MergeAbleResource {
 		this.location = new Location(openmrPatientIdentifier.getLocation(), true);
 		this.preferred = openmrPatientIdentifier.getPreferred();
 		this.voided = openmrPatientIdentifier.getVoided();
-		this.patient = createMpdIdentifierTypePatient(openmrPatientIdentifier.getPatient());
+		this.patient = new Patient(openmrPatientIdentifier.getPatient().getId(), openmrPatientIdentifier.getPatient()
+		        .getUuid());
 	}
 	
 	@Override
@@ -106,17 +107,6 @@ public class Identifier implements MergeAbleResource {
 	
 	public void setPatient(Patient patient) {
 		this.patient = patient;
-	}
-	
-	private Patient createMpdIdentifierTypePatient(org.openmrs.Patient patient) {
-		if (patient == null) {
-			return null;
-		}
-		Patient pat = new Patient();
-		pat.setId(patient.getId());
-		pat.setUuid(patient.getUuid());
-		pat.setDateCreated(patient.getDateCreated());
-		return pat;
 	}
 	
 	private org.openmrs.Patient createOpenmrsIdentifierTypePatient(Patient patient) {

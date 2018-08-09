@@ -12,19 +12,13 @@ public class ConceptNameTag implements MergeAbleResource {
 	
 	private String description;
 	
-	private User creator;
-	
 	private Date dateCreated;
 	
 	private Boolean voided = false;
 	
-	private User voidedBy;
-	
 	private Date dateVoided;
 	
 	private String voidReason;
-	
-	private User changedBy;
 	
 	private Date dateChanged;
 	
@@ -83,14 +77,6 @@ public class ConceptNameTag implements MergeAbleResource {
 		this.description = description;
 	}
 	
-	public User getCreator() {
-		return creator;
-	}
-	
-	public void setCreator(User creator) {
-		this.creator = creator;
-	}
-	
 	public Date getDateCreated() {
 		return dateCreated;
 	}
@@ -107,14 +93,6 @@ public class ConceptNameTag implements MergeAbleResource {
 		this.voided = voided;
 	}
 	
-	public User getVoidedBy() {
-		return voidedBy;
-	}
-	
-	public void setVoidedBy(User voidedBy) {
-		this.voidedBy = voidedBy;
-	}
-	
 	public Date getDateVoided() {
 		return dateVoided;
 	}
@@ -129,14 +107,6 @@ public class ConceptNameTag implements MergeAbleResource {
 	
 	public void setVoidReason(String voidReason) {
 		this.voidReason = voidReason;
-	}
-	
-	public User getChangedBy() {
-		return changedBy;
-	}
-	
-	public void setChangedBy(User changedBy) {
-		this.changedBy = changedBy;
 	}
 	
 	public Date getDateChanged() {

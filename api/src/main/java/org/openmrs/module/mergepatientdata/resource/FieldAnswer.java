@@ -12,8 +12,6 @@ public class FieldAnswer extends BaseOpenmrsObject implements MergeAbleResource 
 	
 	private Concept concept;
 	
-	private User creator;
-	
 	private Field field;
 	
 	private boolean dirty;
@@ -21,7 +19,7 @@ public class FieldAnswer extends BaseOpenmrsObject implements MergeAbleResource 
 	public FieldAnswer(org.openmrs.FieldAnswer answer) {
 		this.setUuid(answer.getUuid());
 		this.field = new Field(answer.getField(), false);
-		this.concept = new Concept(answer.getConcept(), true);
+		this.concept = new Concept(answer.getConcept().getConceptId(), answer.getConcept().getUuid());
 		this.dirty = answer.getDirty();
 		this.dateCreated = answer.getDateCreated();
 	}
@@ -50,14 +48,6 @@ public class FieldAnswer extends BaseOpenmrsObject implements MergeAbleResource 
 	
 	public void setConcept(Concept concept) {
 		this.concept = concept;
-	}
-	
-	public User getCreator() {
-		return creator;
-	}
-	
-	public void setCreator(User creator) {
-		this.creator = creator;
 	}
 	
 	public Field getField() {
