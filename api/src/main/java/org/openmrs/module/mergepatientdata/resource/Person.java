@@ -56,6 +56,7 @@ public class Person extends BaseOpenmrsMetadata implements MergeAbleResource {
 	@SuppressWarnings("unchecked")
 	public Person(org.openmrs.Person openmrsPerson) {
 		this.personId = openmrsPerson.getId();
+		this.setId(personId);
 		this.setDateChanged(openmrsPerson.getDateChanged());
 		this.setDateCreated(openmrsPerson.getDateCreated());
 		this.setUuid(openmrsPerson.getUuid());
@@ -269,12 +270,12 @@ public class Person extends BaseOpenmrsMetadata implements MergeAbleResource {
 	
 	@Override
 	public Integer getId() {
-		return null;
+		return personId;
 	}
 	
 	@Override
 	public void setId(Integer id) {
-		//this.personId = id;
+		this.personId = id;
 	}
 	
 }

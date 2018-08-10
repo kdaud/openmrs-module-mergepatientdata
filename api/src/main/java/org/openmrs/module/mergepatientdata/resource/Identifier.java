@@ -31,8 +31,10 @@ public class Identifier implements MergeAbleResource {
 		this.location = new Location(openmrPatientIdentifier.getLocation(), true);
 		this.preferred = openmrPatientIdentifier.getPreferred();
 		this.voided = openmrPatientIdentifier.getVoided();
-		this.patient = new Patient(openmrPatientIdentifier.getPatient().getId(), openmrPatientIdentifier.getPatient()
-		        .getUuid());
+		if (openmrPatientIdentifier.getPatient() != null) {
+			this.patient = new Patient(openmrPatientIdentifier.getPatient().getId(), openmrPatientIdentifier.getPatient()
+			        .getUuid());
+		}
 	}
 	
 	@Override

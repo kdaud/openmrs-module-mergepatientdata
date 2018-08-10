@@ -23,6 +23,7 @@ import org.openmrs.module.mergepatientdata.resource.Identifier;
 import org.openmrs.module.mergepatientdata.resource.Location;
 import org.openmrs.module.mergepatientdata.resource.LocationTag;
 import org.openmrs.module.mergepatientdata.resource.MergeAbleResource;
+import org.openmrs.module.mergepatientdata.resource.Obs;
 import org.openmrs.module.mergepatientdata.resource.Patient;
 import org.openmrs.module.mergepatientdata.resource.PersonAddress;
 import org.openmrs.module.mergepatientdata.resource.PersonName;
@@ -41,11 +42,14 @@ public class ObjectUtils {
 	 */
 	public static Collection<? extends MergeAbleResource> getMPDResourceObjectsFromOpenmrsResourceObjects(
 	        Set<? extends OpenmrsObject> openmrsDataSet) throws MPDException {
+		
 		if (openmrsDataSet != null) {
 			log.info("Starting to convert..");
 			List<? extends OpenmrsObject> openmrsResourceObjects = (List<? extends OpenmrsObject>) openmrsDataSet.stream()
 			        .collect(Collectors.toList());
+			
 			String clazz = MergePatientDataUtils.getClassName(openmrsResourceObjects);
+			
 			switch (clazz) {
 			
 				case MergePatientDataConstants.PATIENT_RESOURCE_NAME:
@@ -80,9 +84,6 @@ public class ObjectUtils {
 				case MergePatientDataConstants.CONCEPTSET_RESOURCE_NAME:
 					return convertToMpdConceptSet(openmrsResourceObjects);
 					
-					//case MergePatientDataConstants.CONCEPTATTR_RESOURCE_NAME:
-					//return convertToMpdConceptAttr(openmrsResourceObjects);
-					
 				case MergePatientDataConstants.CONCEPTMAP_RESOURCE_NAME:
 					return convertToMpdConceptMap(openmrsResourceObjects);
 					
@@ -91,6 +92,9 @@ public class ObjectUtils {
 					
 				case MergePatientDataConstants.ENCOUNTER_RESOURCE_NAME:
 					return convertToMpdEncounter(openmrsResourceObjects);
+					
+				case MergePatientDataConstants.OBS_RESOURCE_NAME:
+					return convertToMpdObs(openmrsResourceObjects);
 					
 				default:
 					throw new MPDException("UnSupported Type : " + clazz);
@@ -119,6 +123,10 @@ public class ObjectUtils {
 					
 				case MergePatientDataConstants.ENCOUNTER_RESOURCE_NAME:
 					return convertToOpenmrsEncounterObjects(mpdList);
+					
+				case MergePatientDataConstants.OBS_RESOURCE_NAME:
+					return convertToOpenmrsObsObjects(mpdList);
+					
 				default:
 					throw new MPDException("Un Supported Type : " + clazz);
 			}
@@ -127,6 +135,16 @@ public class ObjectUtils {
 		}
 		
 		return null;
+	}
+	
+	private static List<? extends OpenmrsObject> convertToOpenmrsObsObjects(List<? extends MergeAbleResource> mpdList) {
+		List<org.openmrs.Obs> observations = new ArrayList<>();
+		for (MergeAbleResource resourceObject : mpdList) {
+			Obs obs = (Obs) resourceObject;
+			org.openmrs.Obs openmrsObs = (org.openmrs.Obs) obs.getOpenMrsObject();
+			observations.add(openmrsObs);
+		}
+		return observations;
 	}
 	
 	private static List<org.openmrs.Location> covertToOpenmrsLocationObjects(List<? extends MergeAbleResource> mpdList) {
@@ -256,6 +274,19 @@ public class ObjectUtils {
 		return names;
 	}
 	
+	private static Collection<? extends MergeAbleResource> convertToMpdObs(
+			List<? extends OpenmrsObject> openmrsResourceObjects) {
+		List<Obs> obsList = new ArrayList<>();
+		for (OpenmrsObject object : openmrsResourceObjects) {
+			if (org.openmrs.Obs.class.isAssignableFrom(object.getClass())) {
+				org.openmrs.Obs obs = (org.openmrs.Obs) object;
+				Obs mObs = new Obs(obs, true);
+				obsList.add(mObs);
+			}
+		}
+		return obsList;
+	}
+	
 	private static Collection<? extends MergeAbleResource> convertToMpdConceptAnswer(
 			List<? extends OpenmrsObject> openmrsResourceObjects) {
 		List<ConceptAnswer> result = new ArrayList<>();
@@ -278,18 +309,6 @@ public class ObjectUtils {
 		return result;
 	}
 	
-	/*
-	private static Collection<? extends MergeAbleResource> convertToMpdConceptAttr(
-			List<? extends OpenmrsObject> openmrsResourceObjects) {
-		List<ConceptAttribute> result = new ArrayList<>();
-		for (OpenmrsObject att : openmrsResourceObjects) {
-			org.openmrs.ConceptAttribute oAtt = (org.openmrs.ConceptAttribute) att;
-			ConceptAttribute mAtt = new ConceptAttribute(oAtt);
-			result.add(mAtt);
-		}
-		return result;
-	}
-	*/
 	private static Collection<? extends MergeAbleResource> convertToMpdConceptMap(
 			List<? extends OpenmrsObject> openmrsResourceObjects) {
 		Set<ConceptMap> result = new HashSet<>();

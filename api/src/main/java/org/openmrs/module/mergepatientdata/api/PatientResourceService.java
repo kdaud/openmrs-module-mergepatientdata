@@ -6,8 +6,7 @@ import org.openmrs.PatientIdentifierType;
 import org.openmrs.api.APIException;
 import org.openmrs.api.OpenmrsService;
 import org.openmrs.module.mergepatientdata.api.model.audit.PaginatedAuditMessage;
-import org.openmrs.module.mergepatientdata.resource.Encounter;
-import org.openmrs.module.mergepatientdata.resource.Patient;
+import org.openmrs.module.mergepatientdata.sync.MPDStore;
 import org.springframework.transaction.annotation.Transactional;
 
 @Transactional
@@ -22,7 +21,6 @@ public interface PatientResourceService extends OpenmrsService {
 	public List<org.openmrs.Patient> getPatients(String name, String identifier,
 	        List<PatientIdentifierType> identifierTypes, boolean matchIdentifierExactly) throws APIException;
 	
-	public List<org.openmrs.Patient> savePatients(List<Patient> patients, PaginatedAuditMessage auditor,
-	        List<Encounter> encounters);
+	public List<org.openmrs.Patient> savePatients(MPDStore store, PaginatedAuditMessage auditor);
 	
 }

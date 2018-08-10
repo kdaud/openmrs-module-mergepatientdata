@@ -122,7 +122,7 @@ public class MergePatientDataUtilsTest extends BaseModuleContextSensitiveTest {
 	}
 	
 	@Test
-	public void mergeResourceToOpenmrsDataBase_shouldSaveObs() {
+	public void mergeResourceToOpenmrsDataBase_shouldSaveObsInEncounter() {
 		typesToImport.add(Encounter.class);
 		store.getTypes().add(MergeAbleDataCategory.ENCOUNTER);
 		Encounter newEnc = buildEncounter();
@@ -132,8 +132,27 @@ public class MergePatientDataUtilsTest extends BaseModuleContextSensitiveTest {
 		Set<Obs> obsz = new HashSet<>();
 		obsz.add(someObs);
 		newEnc.setObs(obsz);
+		newEnc.setId(56);
 		store.setEncounters(new ArrayList<>());
 		store.getEncounters().add(newEnc);
+		MergePatientDataUtils.mergeResourceToOpenmrsDataBase(store, typesToImport, auditor);
+		assertNotNull(Context.getObsService().getObsByUuid("5h5x710b-dm563-490b7-b449-6e0j739nv630"));
+		
+	}
+	
+	@Test
+	public void mergeResourceToOpenmrsDataBase_shouldSaveObs() {
+		typesToImport.add(Obs.class);
+		store.getTypes().add(MergeAbleDataCategory.OBS);
+		Obs someObs = buildObs();
+		Person patient = new Person();
+		patient.setId(2);
+		someObs.setPerson(patient);
+		// Some hard coded uuid
+		someObs.setUuid("5h5x710b-dm563-490b7-b449-6e0j739nv630");
+		someObs.setId(20);
+		store.setObs(new ArrayList<>());
+		store.getObs().add(someObs);
 		MergePatientDataUtils.mergeResourceToOpenmrsDataBase(store, typesToImport, auditor);
 		assertNotNull(Context.getObsService().getObsByUuid("5h5x710b-dm563-490b7-b449-6e0j739nv630"));
 		

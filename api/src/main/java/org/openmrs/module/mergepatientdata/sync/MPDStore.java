@@ -5,7 +5,7 @@ import java.util.List;
 
 import org.openmrs.module.mergepatientdata.enums.MergeAbleDataCategory;
 import org.openmrs.module.mergepatientdata.resource.Encounter;
-import org.openmrs.module.mergepatientdata.resource.Location;
+import org.openmrs.module.mergepatientdata.resource.Obs;
 import org.openmrs.module.mergepatientdata.resource.Patient;
 
 public class MPDStore {
@@ -15,7 +15,7 @@ public class MPDStore {
 	public String originId;
 	public List<Patient> patients;
 	public List<Encounter> encounters;
-	public List<Location> locations;
+	public List<Obs> obs;
 	public List<MergeAbleDataCategory> types = new ArrayList<>();
 	
 	public List<MergeAbleDataCategory> getTypes() {
@@ -30,18 +30,18 @@ public class MPDStore {
 	public void setPatients(List<Patient> patients) {
 		this.patients = patients;
 	}
-	public List<Location> getLocations() {
-		return locations;
+	public List<Obs> getObs() {
+		return obs;
 	}
-	public void setLocations(List<Location> locations) {
-		this.locations = locations;
+	public void setObs(List<Obs> obs) {
+		this.obs = obs;
 	}
 	public void addType(MergeAbleDataCategory type) {
 		this.types.add(type);
 	}
 	public boolean hastData() {
-		if (this.patients != null || this.locations != null) {
-			if (!this.patients.isEmpty() || !this.locations.isEmpty() || !this.encounters.isEmpty()) {
+		if (this.patients != null || this.obs != null) {
+			if (!this.patients.isEmpty() || !this.obs.isEmpty() || !this.encounters.isEmpty()) {
 				return true;
 			}
 		}

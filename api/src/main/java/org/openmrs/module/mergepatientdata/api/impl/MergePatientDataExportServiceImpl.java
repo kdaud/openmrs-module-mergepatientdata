@@ -20,6 +20,7 @@ import org.openmrs.module.mergepatientdata.api.utils.ObjectUtils;
 import org.openmrs.module.mergepatientdata.enums.MergeAbleDataCategory;
 import org.openmrs.module.mergepatientdata.enums.Status;
 import org.openmrs.module.mergepatientdata.resource.Encounter;
+import org.openmrs.module.mergepatientdata.resource.Obs;
 import org.openmrs.module.mergepatientdata.resource.Patient;
 import org.openmrs.module.mergepatientdata.sync.MPDStore;
 import org.slf4j.Logger;
@@ -43,12 +44,12 @@ public class MergePatientDataExportServiceImpl implements MergePatientDataExport
 		auditor.setOrigin(MergePatientDataConstants.THIS_INSTANCE_NAME + "(" + thisInstanceId + ")");
 		for (Class resource : resourceClassesToExport) {
 			HashMap<String, Integer> resourceMapCounter = null;
+			// Patient
 			if (resource.isAssignableFrom(Patient.class)) {
 				store.addType(MergeAbleDataCategory.PATIENT);
 				PatientResourceService patientResourceService = new PatientResourceServiceImpl();
 				// We currently not merging voided Patients
 				Set<org.openmrs.Patient> openmrsPatients = new HashSet<>(patientResourceService.getAllPatients(false));
-		
 				try {
 					resourceMapCounter = resourceMapCounter == null ? new HashMap<>() : resourceMapCounter;
 					List<Patient> patients = (List<Patient>) ObjectUtils
@@ -61,6 +62,35 @@ public class MergePatientDataExportServiceImpl implements MergePatientDataExport
 					auditor.getFailureDetails().add(e.getMessage());
 				}
 			}
+			
+			// Obs
+			if (!resource.isAssignableFrom(Obs.class)) {
+				System.out.println("Exporting Obs");
+				store.addType(MergeAbleDataCategory.OBS);
+				if (store.getPatients() != null) {
+					store.setObs(new ArrayList<>());
+					// Get Obs of a Patient that have Encounter as null
+					for (Patient pat : store.getPatients()) {
+						List<org.openmrs.Obs> mixedUpObs = Context.getObsService().getObservationsByPerson(new org.openmrs.Person(pat.getId()));
+						if (mixedUpObs != null) {
+							List<org.openmrs.Obs> requiredObs = mixedUpObs.stream().filter(obs -> obs.getEncounter() == null)
+									.collect(Collectors.toList());
+							if (!requiredObs.isEmpty()) {
+								List<Obs> obs = (List<Obs>) ObjectUtils.getMPDResourceObjectsFromOpenmrsResourceObjects(new HashSet<>(requiredObs));
+								if (obs != null) {
+									System.out.println("Added and Obs");
+									store.getObs().addAll(obs);
+								}
+							}
+						}
+						
+					}
+					auditor.getResources().add("Obs");
+					auditor.getResourceCount().put("Obs", store.getObs().size());
+				}
+			}
+			
+			// Encounter
 			if (resource.isAssignableFrom(Encounter.class)) {
 				store.addType(MergeAbleDataCategory.ENCOUNTER);
 				auditor.getResources().add(Encounter.class.getSimpleName());
@@ -69,14 +99,12 @@ public class MergePatientDataExportServiceImpl implements MergePatientDataExport
 					store.setEncounters(new ArrayList<>());
 					List<Encounter> encounterCandidates = new ArrayList<>();
 					for (Patient pat : store.getPatients()) {
-						List<org.openmrs.Encounter> encounters = Context.getEncounterService().
+						 List<org.openmrs.Encounter> encounters = Context.getEncounterService().
 								getEncountersByPatientIdentifier(pat.getPatientIdentifier().getIdentifier());
 						try {
 							if (encounters != null) {
-								System.out.println("Processing " + pat.getName() + "'s Encounters -size: " + encounters.size());
 								List<Encounter> mpdEncounters = (List<Encounter>) ObjectUtils.
-										getMPDResourceObjectsFromOpenmrsResourceObjects(new HashSet<>(encounters));
-								System.out.println("Done converting the Encounters");
+										getMPDResourceObjectsFromOpenmrsResourceObjects(encounters.stream().collect(Collectors.toSet()));
 								for (Encounter enc : mpdEncounters) {
 									encounterCandidates.add(enc);
 								}

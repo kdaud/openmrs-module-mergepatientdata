@@ -6,6 +6,7 @@ import java.util.List;
 import org.openmrs.module.mergepatientdata.MergePatientDataConstants;
 import org.openmrs.module.mergepatientdata.api.exceptions.MPDException;
 import org.openmrs.module.mergepatientdata.api.impl.EncounterResourceServiceImpl;
+import org.openmrs.module.mergepatientdata.api.impl.ObsResourceServiceImpl;
 import org.openmrs.module.mergepatientdata.api.impl.PatientResourceServiceImpl;
 import org.openmrs.module.mergepatientdata.api.model.audit.PaginatedAuditMessage;
 import org.openmrs.module.mergepatientdata.api.model.config.ClassConfiguration;
@@ -14,6 +15,7 @@ import org.openmrs.module.mergepatientdata.api.model.config.MethodConfiguration;
 import org.openmrs.module.mergepatientdata.enums.MergeAbleDataCategory;
 import org.openmrs.module.mergepatientdata.resource.Encounter;
 import org.openmrs.module.mergepatientdata.resource.MergeAbleResource;
+import org.openmrs.module.mergepatientdata.resource.Obs;
 import org.openmrs.module.mergepatientdata.resource.Patient;
 import org.openmrs.module.mergepatientdata.sync.MPDClient;
 import org.openmrs.module.mergepatientdata.sync.MPDStore;
@@ -48,6 +50,7 @@ public class MergePatientDataUtils {
 		List<Class> requiredResourceTypes = new ArrayList<>();	
 		if (configuration != null && method != null) {	
 			switch (method) {
+			
 				case MergePatientDataConstants.EXPORT_GENERAL_NAME:
 					
 					MethodConfiguration exportConfig = configuration.getExporting();
@@ -99,7 +102,11 @@ public class MergePatientDataUtils {
 			type = dataList.get(0).getClass();
 			if (type != null) {
 				log.info("Getting class name :{}", type.getSimpleName());
-				return type.getSimpleName();
+				String name = type.getSimpleName();
+				if (name.contains("_")) {
+					return name.substring(0, name.indexOf("_"));
+				}
+				return name;
 			}
 		} else {
 			log.warn("openmrsData looks empty :{}", dataList);
@@ -143,21 +150,33 @@ public class MergePatientDataUtils {
 	        PaginatedAuditMessage auditor) {
 		List<org.openmrs.Patient> savedPatients = null;
 		for (MergeAbleDataCategory resourceCategory : store.getTypes()) {
+			// Patients
 			if (resourceCategory == MergeAbleDataCategory.PATIENT) {
 				// Check whether its really required
 				if (ObjectUtils.typeRequired(Patient.class, resourceTypesToImport)) {
-					savedPatients = new PatientResourceServiceImpl().savePatients(store.getPatients(), auditor,
-					    store.getEncounters());
+					savedPatients = new PatientResourceServiceImpl().savePatients(store, auditor);
 				}
 			}
+			// Obs
+			if (resourceCategory == MergeAbleDataCategory.OBS) {
+				System.out.println("Importing Obs");
+				if (savedPatients == null) {
+					auditor.getFailureDetails().add("Found no Patient Resource To Merge Obs Data Against");
+					return;
+				}
+				new ObsResourceServiceImpl().saveObservations(
+				    filterOutObsToMergeAgainstPatients(store.getObs(), savedPatients), auditor);
+				
+			}
+			// Encounter
 			if (resourceCategory == MergeAbleDataCategory.ENCOUNTER) {
 				if (ObjectUtils.typeRequired(Encounter.class, resourceTypesToImport)) {
 					if (savedPatients == null) {
 						auditor.getFailureDetails().add("Found no Patient Resource To Merge Encounter Data Against");
 						return;
 					}
-					new EncounterResourceServiceImpl().saveEncounters(MergePatientDataUtils
-					        .filterOutEncountersToMergeAgainstPatients(store.getEncounters(), savedPatients), auditor);
+					new EncounterResourceServiceImpl().saveEncounters(
+					    filterOutEncountersToMergeAgainstPatients(store.getEncounters(), savedPatients), auditor);
 				}
 			}
 		}
@@ -198,6 +217,33 @@ public class MergePatientDataUtils {
 	private static boolean encounterAlreadyIncludedToList(List<Encounter> encounters, Encounter candidate) {
 		for (Encounter enc : encounters) {
 			if (enc.getId() == candidate.getId()) {
+				return true;
+			}
+		}
+		return false;
+	}
+	
+	private static List<Obs> filterOutObsToMergeAgainstPatients(List<Obs> obs, List<org.openmrs.Patient> patients) {
+		if (obs == null || patients == null) {
+			return null;
+		}
+		List<Obs> qualifyingObs = new ArrayList<>();
+		for (org.openmrs.Patient patient : patients) {
+			for (Obs candidate : obs) {
+				if (candidate.getPerson().getId() == patient.getId()) {
+					// Make sure its not included yet
+					if (!obsAlreadyIncludedToList(qualifyingObs, candidate)) {
+						qualifyingObs.add(candidate);
+					}
+				}
+			}
+		}
+		return qualifyingObs;
+	}
+	
+	private static boolean obsAlreadyIncludedToList(List<Obs> obs, Obs candidate) {
+		for (Obs item : obs) {
+			if (item.getId() == candidate.getId()) {
 				return true;
 			}
 		}

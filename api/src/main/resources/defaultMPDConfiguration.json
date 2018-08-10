@@ -16,6 +16,11 @@
          "enabled" : true,
          "classTitle": "Encounter",
          "openmrsClass" : "org.openmrs.Encounter"
+       },
+       {
+         "enabled" : true,
+         "classTitle": "Obs",
+         "openmrsClass" : "org.openmrs.Obs"
        }
      ]
   },
@@ -31,6 +36,11 @@
          "enabled" : true,
          "classTitle": "Encounter",
          "openmrsClass" : "org.openmrs.Encounter"
+       },
+       {
+         "enabled" : true,
+         "classTitle": "Obs",
+         "openmrsClass" : "org.openmrs.Obs"
        }
      ]
   } 

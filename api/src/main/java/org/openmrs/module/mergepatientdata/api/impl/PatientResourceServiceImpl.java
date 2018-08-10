@@ -15,6 +15,8 @@ import org.openmrs.module.mergepatientdata.api.PatientResourceService;
 import org.openmrs.module.mergepatientdata.api.model.audit.PaginatedAuditMessage;
 import org.openmrs.module.mergepatientdata.api.utils.ObjectUtils;
 import org.openmrs.module.mergepatientdata.resource.Encounter;
+import org.openmrs.module.mergepatientdata.resource.Obs;
+import org.openmrs.module.mergepatientdata.sync.MPDStore;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Repository;
@@ -58,15 +60,27 @@ public class PatientResourceServiceImpl extends BaseOpenmrsService implements Pa
 		
 	}
 	
-	private void updateEncountersOfTheIdentifiersIfRequired(Integer oldId, Patient updatedPatient, List<Encounter> encounters) {
-		if (encounters == null) {
-			return;
+	private void updateEncountersOfTheIdentifiersIfRequired(Integer oldId, Patient updatedPatient, MPDStore store) {
+		
+		List<org.openmrs.module.mergepatientdata.resource.Encounter> encounters = store.getEncounters();
+		List<org.openmrs.module.mergepatientdata.resource.Obs> obsList = store.getObs();
+		if (encounters != null) {
+			for (Encounter enc : encounters) {
+				if (enc.getPatient().getUuid().equals(updatedPatient.getUuid())) {
+					if (enc.getPatient().getId() == oldId) {
+						// Update it of the new Patient Id
+						enc.getPatient().setId(updatedPatient.getId());
+					}
+				}
+			}
 		}
-		for (Encounter enc : encounters) {
-			if (enc.getPatient().getUuid().equals(updatedPatient.getUuid())) {
-				if (enc.getPatient().getId() == oldId) {
-					// Update it of the new Patient Id
-					enc.getPatient().setId(updatedPatient.getId());
+		if (obsList != null) {
+			for (Obs obs : obsList) {
+				if (obs.getPerson().getUuid().equals(updatedPatient.getUuid())) {
+					if (obs.getPerson().getId() == oldId) {
+						// Update it of the new Patient Id
+						obs.getPerson().setId(updatedPatient.getId());
+					}
 				}
 			}
 		}
@@ -90,8 +104,10 @@ public class PatientResourceServiceImpl extends BaseOpenmrsService implements Pa
 	
 	@SuppressWarnings("unchecked")
 	@Override
-	public List<org.openmrs.Patient> savePatients(List<org.openmrs.module.mergepatientdata.resource.Patient> patients,
-	        PaginatedAuditMessage auditor, List<Encounter> encounters) {
+	public List<org.openmrs.Patient> savePatients(MPDStore store, PaginatedAuditMessage auditor) {
+		
+		List<org.openmrs.module.mergepatientdata.resource.Patient> patients = store.getPatients();
+
 		List<org.openmrs.Patient> savedPatients = new ArrayList<>();
 		
 		List<org.openmrs.Patient> openmrsPatients = (List<org.openmrs.Patient>) ObjectUtils
@@ -106,7 +122,7 @@ public class PatientResourceServiceImpl extends BaseOpenmrsService implements Pa
 				
 				// TODO cater for auditing of updated Resources
 				if (savedPatient != null) {
-					updateEncountersOfTheIdentifiersIfRequired(oldId, savedPatient, encounters);
+					updateEncountersOfTheIdentifiersIfRequired(oldId, savedPatient, store);
 					savedPatients.add(savedPatient);
 					counter++;
 				}

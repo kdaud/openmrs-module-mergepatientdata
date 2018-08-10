@@ -9,17 +9,15 @@
  */
 package org.openmrs.module.mergepatientdata.api;
 
-import org.openmrs.annotation.Authorized;
-import org.openmrs.api.APIException;
-import org.openmrs.api.OpenmrsService;
-import org.openmrs.module.mergepatientdata.MergepatientdataConfig;
-import org.openmrs.module.mergepatientdata.Item;
-import org.springframework.transaction.annotation.Transactional;
+import java.util.List;
 
-/**
- * The main service of this module, which is exposed for other modules. See
- * moduleApplicationContext.xml on how it is wired up.
- */
-public interface MergepatientdataService extends OpenmrsService {
+import org.openmrs.module.mergepatientdata.api.model.audit.PaginatedAuditMessage;
+import org.openmrs.module.mergepatientdata.resource.Obs;
+
+public interface ObsResourceService {
+	
+	public org.openmrs.Obs saveObs(org.openmrs.Obs obs);
+	
+	public void saveObservations(List<Obs> obs, PaginatedAuditMessage auditor);
 	
 }

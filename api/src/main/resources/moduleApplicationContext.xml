@@ -63,6 +63,7 @@
     <bean id="patient" class="org.openmrs.module.mergepatientdata.resource.Patient" />
     <bean id="location" class="org.openmrs.module.mergepatientdata.resource.Location" />
     <bean id="encounter" class="org.openmrs.module.mergepatientdata.resource.Encounter" />
+    <bean id="obs" class="org.openmrs.module.mergepatientdata.resource.Obs" />
     
     <bean id="mpdcient" 
           class="org.openmrs.module.mergepatientdata.sync.MPDClient">
@@ -71,6 +72,7 @@
                    <ref bean="patient" />
                    <ref bean="location" />
                    <ref bean="encounter" />
+                   <ref bean="obs" />
               </list>
           </property>
     </bean>

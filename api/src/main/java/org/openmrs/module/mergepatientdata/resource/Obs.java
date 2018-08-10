@@ -4,11 +4,10 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.openmrs.BaseOpenmrsMetadata;
 import org.openmrs.BaseOpenmrsObject;
 
-public class Obs implements MergeAbleResource {
-	
-	protected String uuid;
+public class Obs extends BaseOpenmrsMetadata implements MergeAbleResource {
 	
 	protected Integer obsId;
 	
@@ -63,10 +62,11 @@ public class Obs implements MergeAbleResource {
 	
 	public Obs(Integer id, String uuid) {
 		this.obsId = id;
+		setUuid(uuid);
 	}
 	
 	public Obs(org.openmrs.Obs obs, Boolean setComplexMetadata) {
-		this.uuid = obs.getUuid();
+		this.setUuid(obs.getUuid());
 		this.person = new Person (obs.getPerson().getId(), obs.getPerson().getUuid());
 		if (person != null) {
 			this.personId = person.getPersonId();
@@ -87,9 +87,11 @@ public class Obs implements MergeAbleResource {
 		this.location = obs.getLocation() != null ? new Location(obs.getLocation().getId(), obs.getLocation().getUuid()) : null;
 		this.dirty = obs.isDirty();
 		this.hasGroupMembers = obs.hasGroupMembers();	
-		this.encounter = new Encounter(obs.getEncounter().getId(), obs.getEncounter().getUuid());
 		this.obsGroup = obs.getObsGroup() != null ? new Obs(obs.getObsGroup().getId(), obs.getObsGroup().getUuid()) : null;
 		this.previousVersion = obs.getPreviousVersion() != null ? new Obs(obs.getPreviousVersion().getId(), obs.getPreviousVersion().getUuid()) : null;
+		if (obs.getEncounter() != null) {
+			this.encounter = new Encounter(obs.getEncounter().getId(), obs.getEncounter().getUuid());
+		}
 		if (obs.getGroupMembers() != null) {
 			Set<Obs> mpdObsGroupMembers = new HashSet<>();
 			for (org.openmrs.Obs member : obs.getGroupMembers()) {
@@ -103,7 +105,7 @@ public class Obs implements MergeAbleResource {
 	@Override
 	public BaseOpenmrsObject getOpenMrsObject() {
 		org.openmrs.Obs obs = new org.openmrs.Obs();
-		obs.setUuid(uuid);
+		obs.setUuid(getUuid());
 		obs.setId(obsId);
 		obs.setObsDatetime(obsDatetime);
 		obs.setAccessionNumber(accessionNumber);
@@ -368,12 +370,14 @@ public class Obs implements MergeAbleResource {
 		this.encounter = encounter;
 	}
 	
-	public String getUuid() {
-		return uuid;
+	@Override
+	public Integer getId() {
+		return obsId;
 	}
 	
-	public void setUuid(String uuid) {
-		this.uuid = uuid;
+	@Override
+	public void setId(Integer id) {
+		setObsId(id);
 	}
 	
 }
