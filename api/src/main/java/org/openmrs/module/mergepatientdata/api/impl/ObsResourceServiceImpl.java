@@ -18,9 +18,14 @@ import org.openmrs.module.mergepatientdata.api.ObsResourceService;
 import org.openmrs.module.mergepatientdata.api.exceptions.MissingMetadataException;
 import org.openmrs.module.mergepatientdata.api.model.audit.PaginatedAuditMessage;
 import org.openmrs.module.mergepatientdata.api.utils.ObjectUtils;
+import org.openmrs.module.mergepatientdata.enums.Status;
 import org.openmrs.module.mergepatientdata.resource.Obs;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class ObsResourceServiceImpl implements ObsResourceService {
+	
+	private final static Logger log = LoggerFactory.getLogger(ObsResourceServiceImpl.class);
 	
 	@Override
 	public org.openmrs.Obs saveObs(org.openmrs.Obs obs) {
@@ -64,10 +69,20 @@ public class ObsResourceServiceImpl implements ObsResourceService {
 					        + " Make sure its present before Merging");
 				}
 			}
-			org.openmrs.Obs savedObs = saveObs(obs);
-			if (savedObs != null) {
-				counter++;
+			try {
+				org.openmrs.Obs savedObs = saveObs(obs);
+				if (savedObs != null) {
+					counter++;
+				}
 			}
+			catch (org.hibernate.exception.ConstraintViolationException e) {
+				// This means, we tried merging an Obs having reference to another which is not yet merged
+				auditor.setStatus(Status.Failure);
+				auditor.getFailureDetails().add(
+				    "Error with : " + e.getSQL() + " NB:- To resolve this, try importing again using the same file.");
+				log.error(e.getMessage());
+			}
+			
 		}
 		auditor.getResourceCount().put("Obs", counter);
 	}
